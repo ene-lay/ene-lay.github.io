@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enelay's Retro San Francisco Adventure</title>
     <style>
-        @font-face {
-            font-family: 'ArcadeClassic';
-            src: url('https://fonts.cdnfonts.com/s/15161/Press_Start_2P-webfont.woff') format('woff');
-        }
-        
         body {
             margin: 0;
             padding: 0;
@@ -18,7 +13,7 @@
             overflow: hidden;
             background: url('/sfback.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'ArcadeClassic', sans-serif;
+            font-family: 'Press Start 2P', cursive;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,24 +56,25 @@
 
         .fog span {
             position: absolute;
-            width: 200px;
+            width: 300px;
             height: 200px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            animation: fog 20s linear infinite;
-            opacity: 0.5;
+            filter: blur(50px);
+            animation: fog 30s linear infinite;
+            opacity: 0.6;
         }
 
         @keyframes fog {
             0% {
-                transform: translateY(100vh) scale(0.5);
+                transform: translateX(-100vw) translateY(20px) scale(1);
                 opacity: 0;
             }
             50% {
-                opacity: 0.3;
+                opacity: 0.5;
             }
             100% {
-                transform: translateY(-100vh) scale(2);
+                transform: translateX(100vw) translateY(-20px) scale(2);
                 opacity: 0;
             }
         }
@@ -92,6 +88,12 @@
             #welcome {
                 font-size: 2rem;
             }
+
+            .fog span {
+                width: 200px;
+                height: 150px;
+                filter: blur(40px);
+            }
         }
 
         @media (max-width: 480px) {
@@ -101,6 +103,12 @@
 
             #welcome {
                 font-size: 1.5rem;
+            }
+
+            .fog span {
+                width: 150px;
+                height: 100px;
+                filter: blur(30px);
             }
         }
     </style>
@@ -141,15 +149,18 @@
         const ai = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2 };
         const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 3, dy: 3, radius: 7 };
 
+        // Randomize colors for paddles and ball
+        const randomColor = () => colors[Math.floor(Math.random() * colors.length)];
+
         function drawPaddle(x, y) {
-            ctx.fillStyle = 'limegreen';
+            ctx.fillStyle = randomColor();
             ctx.fillRect(x, y, paddleWidth, paddleHeight);
         }
 
         function drawBall() {
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'limegreen';
+            ctx.fillStyle = randomColor();
             ctx.fill();
             ctx.closePath();
         }
@@ -235,11 +246,10 @@
             const fogContainer = document.getElementById('fog');
             fogContainer.style.display = 'block';
 
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 15; i++) {
                 const span = document.createElement('span');
                 span.style.left = `${Math.random() * 100}vw`;
                 span.style.animationDuration = `${Math.random() * 20 + 10}s`;
-                span.style.width = span.style.height = `${Math.random() * 100 + 100}px`;
                 fogContainer.appendChild(span);
             }
         }
