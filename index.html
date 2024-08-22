@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Enelay</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        /* Step 1: Initial white screen with the button */
+        #initial-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            overflow: hidden;
+            height: 100%;
             background-color: white;
-            font-family: 'Press Start 2P', cursive;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
+            z-index: 2; /* Ensure it stays on top until clicked */
         }
 
         #enter-button {
@@ -37,6 +38,7 @@
             transform: scale(1.05);
         }
 
+        /* Step 2: Main content that appears after clicking the button */
         #main-content {
             display: none;
             height: 100%;
@@ -46,11 +48,11 @@
             left: 0;
             background: url('/sfback.png') no-repeat center center;
             background-size: contain;
-            background-color: black;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            z-index: 1; /* Below the initial screen by default */
         }
 
         #welcome-text {
@@ -117,19 +119,26 @@
     </style>
 </head>
 <body>
-    <div id="enter-button">Click to Enter</div>
+    <!-- Step 1: Initial screen with the button -->
+    <div id="initial-screen">
+        <div id="enter-button">Click to Enter</div>
+    </div>
+
+    <!-- Step 2: Main content that appears after clicking the button -->
     <div id="main-content">
         <div id="welcome-text">WELCOME TO ENELAY</div>
         <div class="fog" id="fog"></div>
     </div>
 
     <script>
+        // Step 1: Handle the click event to transition to the main content
         document.getElementById('enter-button').addEventListener('click', function() {
-            document.getElementById('enter-button').style.display = 'none';
+            document.getElementById('initial-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'flex';
             createFogEffect();
         });
 
+        // Step 2: Create the fog effect when the main content is displayed
         function createFogEffect() {
             const fogContainer = document.getElementById('fog');
             for (let i = 0; i < 15; i++) {
