@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris Game - Enelay</title>
+    <title>Pong Game - Enelay</title>
     <style>
         body {
             background-color: black;
@@ -17,12 +17,10 @@
             margin: 0;
             text-align: center;
         }
-
         canvas {
             background-color: #222;
             border: 4px solid limegreen;
         }
-
         #welcome {
             display: none;
             font-size: 2rem;
@@ -31,179 +29,108 @@
     </style>
 </head>
 <body>
-    <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+    <canvas id="pongCanvas" width="600" height="400"></canvas>
     <div id="welcome">Welcome to Enelay</div>
 
     <script>
-        const canvas = document.getElementById('tetrisCanvas');
+        const canvas = document.getElementById('pongCanvas');
         const ctx = canvas.getContext('2d');
-        const grid = 30;
-        const tetrominoSequence = [];
 
-        // Generate random tetromino sequence
-        const tetrominoes = {
-            'I': [[1, 1, 1, 1]],
-            'J': [[1, 0, 0], [1, 1, 1]],
-            'L': [[0, 0, 1], [1, 1, 1]],
-            'O': [[1, 1], [1, 1]],
-            'S': [[0, 1, 1], [1, 1, 0]],
-            'Z': [[1, 1, 0], [0, 1, 1]],
-            'T': [[0, 1, 0], [1, 1, 1]],
-        };
+        let playerScore = 0;
+        const paddleWidth = 10, paddleHeight = 75;
+        const player = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+        const ai = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2 };
+        const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 3, dy: 3, radius: 7 };
 
-        const colors = {
-            'I': 'cyan',
-            'O': 'yellow',
-            'T': 'purple',
-            'S': 'green',
-            'Z': 'red',
-            'J': 'blue',
-            'L': 'orange',
-        };
+        function drawPaddle(x, y) {
+            ctx.fillStyle = 'limegreen';
+            ctx.fillRect(x, y, paddleWidth, paddleHeight);
+        }
 
-        // The playing field is a 10x20 grid
-        const playfield = Array.from({ length: 20 }, () => Array(10).fill(0));
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'limegreen';
+            ctx.fill();
+            ctx.closePath();
+        }
 
-        let tetromino = getNextTetromino();
-        let gameOver = false;
-        let linesCleared = 0;
+        function movePlayer() {
+            player.y += player.dy;
+            if (player.y < 0) player.y = 0;
+            if (player.y + paddleHeight > canvas.height) player.y = canvas.height - paddleHeight;
+        }
 
-        // Function to get a random tetromino from the sequence
-        function getNextTetromino() {
-            if (tetrominoSequence.length === 0) {
-                tetrominoSequence.push(...Object.keys(tetrominoes).sort(() => Math.random() - 0.5));
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.dy *= -1;
             }
-            const name = tetrominoSequence.pop();
-            const matrix = tetrominoes[name];
-            const col = playfield[0].length / 2 - Math.ceil(matrix[0].length / 2);
-            return { name, matrix, row: 0, col };
-        }
 
-        // Draw the tetromino on the canvas
-        function drawTetromino() {
-            ctx.fillStyle = colors[tetromino.name];
-            tetromino.matrix.forEach((row, y) => {
-                row.forEach((value, x) => {
-                    if (value) {
-                        ctx.fillRect((tetromino.col + x) * grid, (tetromino.row + y) * grid, grid - 1, grid - 1);
-                    }
-                });
-            });
-        }
+            // Player paddle collision
+            if (ball.x - ball.radius < player.x + paddleWidth &&
+                ball.y > player.y && ball.y < player.y + paddleHeight) {
+                ball.dx *= -1;
+            }
 
-        // Place the tetromino on the playfield
-        function placeTetromino() {
-            tetromino.matrix.forEach((row, y) => {
-                row.forEach((value, x) => {
-                    if (value) {
-                        playfield[tetromino.row + y][tetromino.col + x] = tetromino.name;
-                    }
-                });
-            });
+            // AI paddle collision
+            if (ball.x + ball.radius > ai.x &&
+                ball.y > ai.y && ball.y < ai.y + paddleHeight) {
+                ball.dx *= -1;
+            }
 
-            // Check for full lines
-            let lines = 0;
-            for (let row = playfield.length - 1; row >= 0;) {
-                if (playfield[row].every(cell => cell !== 0)) {
-                    playfield.splice(row, 1);
-                    playfield.unshift(Array(10).fill(0));
-                    lines++;
-                } else {
-                    row--;
+            // Left wall (AI scores)
+            if (ball.x - ball.radius < 0) {
+                resetBall();
+            }
+
+            // Right wall (Player scores)
+            if (ball.x + ball.radius > canvas.width) {
+                playerScore++;
+                resetBall();
+                if (playerScore >= 3) {
+                    revealWelcomeMessage();
                 }
             }
-            linesCleared += lines;
-            if (linesCleared >= 5) {
-                revealWelcomeMessage();
-            }
-
-            if (tetromino.row === 0) {
-                gameOver = true;
-            }
         }
 
-        // Move the tetromino down
-        function moveDown() {
-            if (!canMove(tetromino.matrix, tetromino.row + 1, tetromino.col)) {
-                placeTetromino();
-                tetromino = getNextTetromino();
-            } else {
-                tetromino.row++;
-            }
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx *= -1;
         }
 
-        // Check if the tetromino can move
-        function canMove(matrix, row, col) {
-            return matrix.every((r, y) => {
-                return r.every((value, x) => {
-                    const newX = col + x;
-                    const newY = row + y;
-                    return value === 0 ||
-                        (playfield[newY] && playfield[newY][newX] === 0);
-                });
-            });
+        function moveAI() {
+            ai.y += (ball.y - (ai.y + paddleHeight / 2)) * 0.1;
         }
 
-        // Rotate the tetromino
-        function rotate(matrix) {
-            const N = matrix.length - 1;
-            return matrix.map((row, i) => row.map((_, j) => matrix[N - j][i]));
-        }
-
-        // Handle user input
-        document.addEventListener('keydown', (e) => {
-            if (gameOver) return;
-
-            if (e.key === 'ArrowLeft' && canMove(tetromino.matrix, tetromino.row, tetromino.col - 1)) {
-                tetromino.col--;
-            }
-
-            if (e.key === 'ArrowRight' && canMove(tetromino.matrix, tetromino.row, tetromino.col + 1)) {
-                tetromino.col++;
-            }
-
-            if (e.key === 'ArrowDown') {
-                moveDown();
-            }
-
-            if (e.key === 'ArrowUp') {
-                const rotatedMatrix = rotate(tetromino.matrix);
-                if (canMove(rotatedMatrix, tetromino.row, tetromino.col)) {
-                    tetromino.matrix = rotatedMatrix;
-                }
-            }
-        });
-
-        // Reveal the welcome message
         function revealWelcomeMessage() {
             document.getElementById('welcome').style.display = 'block';
             cancelAnimationFrame(animationFrame);
         }
 
-        // Game loop
-        function loop() {
+        function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPaddle(player.x, player.y);
+            drawPaddle(ai.x, ai.y);
+            drawBall();
+            movePlayer();
+            moveAI();
+            moveBall();
 
-            // Draw the playfield
-            playfield.forEach((row, y) => {
-                row.forEach((value, x) => {
-                    if (value) {
-                        ctx.fillStyle = colors[value];
-                        ctx.fillRect(x * grid, y * grid, grid - 1, grid - 1);
-                    }
-                });
-            });
-
-            // Draw the current tetromino
-            drawTetromino();
-
-            if (!gameOver) {
-                moveDown();
-                animationFrame = requestAnimationFrame(loop);
-            }
+            animationFrame = requestAnimationFrame(gameLoop);
         }
 
-        let animationFrame = requestAnimationFrame(loop);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') player.dy = -5;
+            if (e.key === 'ArrowDown') player.dy = 5;
+        });
+
+        document.addEventListener('keyup', () => player.dy = 0);
+
+        let animationFrame = requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
