@@ -20,16 +20,21 @@
         }
 
         #enter-button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 200px;
+            width: 250px;
             height: 100px;
             background-color: #f0f0f0;
             border: 2px solid black;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             box-shadow: 5px 5px #d3d3d3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+
+        #enter-button:hover {
+            transform: scale(1.05);
         }
 
         #main-content {
@@ -40,7 +45,7 @@
             top: 0;
             left: 0;
             background: url('/sfback.png') no-repeat center center;
-            background-size: contain;
+            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -126,6 +131,7 @@
         document.getElementById('enter-button').addEventListener('click', function() {
             document.getElementById('enter-button').style.display = 'none';
             document.getElementById('main-content').style.display = 'flex';
+            document.body.style.backgroundColor = 'black'; // Ensures black background for the fog effect
             createFogEffect();
         });
 
@@ -134,6 +140,7 @@
             for (let i = 0; i < 15; i++) {
                 const span = document.createElement('span');
                 span.style.left = `${Math.random() * 100}vw`;
+                span.style.top = `${Math.random() * 100}vh`;
                 span.style.animationDuration = `${Math.random() * 20 + 10}s`;
                 fogContainer.appendChild(span);
             }
