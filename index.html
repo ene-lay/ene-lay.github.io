@@ -41,7 +41,6 @@
             left: 0;
             background: url('/sfback.png') no-repeat center center;
             background-size: contain;
-            animation: fadeIn 2s ease-in-out forwards;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -51,7 +50,8 @@
         #welcome-text {
             font-size: 2.5rem;
             color: white;
-            animation: float 5s ease-in-out infinite;
+            animation: floatText 10s linear infinite;
+            white-space: nowrap;
         }
 
         .fog {
@@ -80,10 +80,9 @@
             to { opacity: 1; }
         }
 
-        @keyframes float {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(20px); }
-            100% { transform: translateX(0); }
+        @keyframes floatText {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         @keyframes fogMove {
@@ -119,7 +118,7 @@
 <body>
     <div id="enter-button">Click to Enter</div>
     <div id="main-content">
-        <div id="welcome-text">Welcome to Enelay</div>
+        <div id="welcome-text">WELCOME TO ENELAY</div>
         <div class="fog" id="fog"></div>
     </div>
 
