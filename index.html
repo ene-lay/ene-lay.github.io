@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pong Game - Enelay</title>
+    <title>Enelay's Retro Pirate Adventure</title>
     <style>
         body {
             background-color: black;
@@ -16,27 +16,83 @@
             height: 100vh;
             margin: 0;
             text-align: center;
+            overflow: hidden;
         }
+
+        #countdown {
+            font-size: 3rem;
+            display: none;
+        }
+
         canvas {
+            display: none;
             background-color: #222;
             border: 4px solid limegreen;
         }
+
         #welcome {
             display: none;
-            font-size: 2rem;
+            font-size: 2.5rem;
             margin-top: 20px;
+        }
+
+        .matrix {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: none;
+            background: black;
+            z-index: -1;
+        }
+
+        .matrix span {
+            color: limegreen;
+            font-size: 20px;
+            white-space: nowrap;
+            display: inline-block;
+            animation: drop 5s linear infinite;
+        }
+
+        @keyframes drop {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(100%);
+            }
         }
     </style>
 </head>
 <body>
+    <div id="countdown">3</div>
     <canvas id="pongCanvas" width="600" height="400"></canvas>
     <div id="welcome">Welcome to Enelay</div>
+    <div class="matrix" id="matrix"></div>
 
     <script>
         const canvas = document.getElementById('pongCanvas');
         const ctx = canvas.getContext('2d');
 
-        let playerScore = 0;
+        let countdownValue = 3;
+        const countdownElement = document.getElementById('countdown');
+        countdownElement.style.display = 'block';
+
+        const startCountdown = setInterval(() => {
+            countdownValue--;
+            countdownElement.textContent = countdownValue;
+            if (countdownValue === 0) {
+                clearInterval(startCountdown);
+                countdownElement.style.display = 'none';
+                canvas.style.display = 'block';
+                startGame();
+            }
+        }, 1000);
+
+        let returns = 0;
+        const maxReturns = 3;
         const paddleWidth = 10, paddleHeight = 75;
         const player = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
         const ai = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2 };
@@ -73,6 +129,10 @@
             if (ball.x - ball.radius < player.x + paddleWidth &&
                 ball.y > player.y && ball.y < player.y + paddleHeight) {
                 ball.dx *= -1;
+                returns++;
+                if (returns >= maxReturns) {
+                    revealWelcomeMessage();
+                }
             }
 
             // AI paddle collision
@@ -81,18 +141,9 @@
                 ball.dx *= -1;
             }
 
-            // Left wall (AI scores)
-            if (ball.x - ball.radius < 0) {
+            // Reset ball when it hits left or right wall
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
                 resetBall();
-            }
-
-            // Right wall (Player scores)
-            if (ball.x + ball.radius > canvas.width) {
-                playerScore++;
-                resetBall();
-                if (playerScore >= 3) {
-                    revealWelcomeMessage();
-                }
             }
         }
 
@@ -107,8 +158,9 @@
         }
 
         function revealWelcomeMessage() {
+            canvas.style.display = 'none';
             document.getElementById('welcome').style.display = 'block';
-            cancelAnimationFrame(animationFrame);
+            createMatrixEffect();
         }
 
         function gameLoop() {
@@ -120,17 +172,35 @@
             moveAI();
             moveBall();
 
-            animationFrame = requestAnimationFrame(gameLoop);
+            if (returns < maxReturns) {
+                requestAnimationFrame(gameLoop);
+            }
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp') player.dy = -5;
-            if (e.key === 'ArrowDown') player.dy = 5;
-        });
+        function startGame() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp') player.dy = -5;
+                if (e.key === 'ArrowDown') player.dy = 5;
+            });
 
-        document.addEventListener('keyup', () => player.dy = 0);
+            document.addEventListener('keyup', () => player.dy = 0);
 
-        let animationFrame = requestAnimationFrame(gameLoop);
+            gameLoop();
+        }
+
+        function createMatrixEffect() {
+            const matrixContainer = document.getElementById('matrix');
+            matrixContainer.style.display = 'block';
+
+            const columns = Math.floor(window.innerWidth / 20);
+            for (let i = 0; i < columns; i++) {
+                const span = document.createElement('span');
+                span.textContent = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 36)];
+                span.style.left = `${i * 20}px`;
+                span.style.animationDelay = `${Math.random() * 5}s`;
+                matrixContainer.appendChild(span);
+            }
+        }
     </script>
 </body>
 </html>
