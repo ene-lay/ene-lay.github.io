@@ -11,7 +11,7 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            background: url('/sfbackground.webp') no-repeat center center fixed;
+            background: url('/sfback.png') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Press Start 2P', cursive; /* Retro arcade font */
             display: flex;
@@ -131,18 +131,18 @@
         let returns = 0;
         const maxReturns = 3;
         const paddleWidth = 10, paddleHeight = 75;
+        const canvas = document.getElementById('pongCanvas');
+        const ctx = canvas.getContext('2d');
         const player = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
         const ai = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2 };
         const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 3, dy: 3, radius: 7 };
 
         function drawPaddle(x, y) {
-            const ctx = document.getElementById('pongCanvas').getContext('2d');
             ctx.fillStyle = 'limegreen';
             ctx.fillRect(x, y, paddleWidth, paddleHeight);
         }
 
         function drawBall() {
-            const ctx = document.getElementById('pongCanvas').getContext('2d');
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
             ctx.fillStyle = 'limegreen';
@@ -197,13 +197,12 @@
         }
 
         function revealWelcomeMessage() {
-            document.getElementById('pongCanvas').style.display = 'none';
+            canvas.style.display = 'none';
             document.getElementById('welcome').style.display = 'block';
             createMatrixEffect();
         }
 
         function gameLoop() {
-            const ctx = document.getElementById('pongCanvas').getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawPaddle(player.x, player.y);
             drawPaddle(ai.x, ai.y);
