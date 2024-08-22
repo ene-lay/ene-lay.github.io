@@ -80,11 +80,6 @@
             opacity: 0.6;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         @keyframes floatText {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
@@ -131,7 +126,6 @@
         document.getElementById('enter-button').addEventListener('click', function() {
             document.getElementById('enter-button').style.display = 'none';
             document.getElementById('main-content').style.display = 'flex';
-            document.body.style.backgroundColor = 'black'; // Ensures black background for the fog effect
             createFogEffect();
         });
 
